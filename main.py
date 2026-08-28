@@ -1,49 +1,47 @@
-#!/usr/bin/env python3
-"""
-Auto Code AI - HTTP API Client
-"""
+name: Build Android APK
 
-import json
-import time
-import urllib.request
-import urllib.error
-from typing import Optional, Dict, Any
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-class APIClient:
-    def __init__(self, base_url: str, timeout: int = 30):
-        self.base_url = base_url.rstrip("/")
-        self.timeout = timeout
-        self.max_retries = 3
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-    def get(self, endpoint: str, headers: Optional[Dict] = None) -> Dict[str, Any]:
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        return self._request("GET", url, headers=headers)
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-    def post(self, endpoint: str, data: Dict, headers: Optional[Dict] = None) -> Dict[str, Any]:
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        return self._request("POST", url, data=data, headers=headers)
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-    def _request(self, method: str, url: str, data=None, headers=None) -> Dict[str, Any]:
-        h = {"Content-Type": "application/json", **(headers or {})}
-        body = json.dumps(data).encode() if data else None
+    - name: Install Buildozer & Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        pip install --upgrade pip
+        pip install buildozer Cython==0.29.36
 
-        for attempt in range(self.max_retries):
-            try:
-                req = urllib.request.Request(url, data=body, headers=h, method=method)
-                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                    return json.loads(resp.read().decode())
-            except urllib.error.HTTPError as e:
-                if e.code >= 500 and attempt < self.max_retries - 1:
-                    time.sleep(2 ** attempt)
-                    continue
-                raise
-        raise RuntimeError("Max retries exceeded")
+    - name: Initialize Buildozer Spec
+      run: |
+        if [ ! -f buildozer.spec ]; then
+          buildozer init
+        fi
+        sed -i 's/# title = My Application/title = Cyber Auto Bot/' buildozer.spec
+        sed -i 's/# package.name = myapp/package.name = cyberautobot/' buildozer.spec
+        sed -i 's/# package.domain = org.test/package.domain = org.cyber/' buildozer.spec
+        sed -i 's/# source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,html/' buildozer.spec
+        sed -i 's/requirements = python3,kivy/requirements = python3,kivy,flask,requests/' buildozer.spec
 
+    - name: Build APK with Buildozer
+      run: |
+        buildozer -v android debug
 
-def main():
-    client = APIClient("https://jsonplaceholder.typicode.com")
-    post = client.get("/posts/1")
-    print("Fetched post:", json.dumps(post, indent=2))
-
-if __name__ == "__main__":
-    main()
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cyber-auto-bot-apk
+        path: bin/*.apk
