@@ -1,58 +1,49 @@
 #!/usr/bin/env python3
 """
-Auto Code AI - Flask REST API Server
+Auto Code AI - HTTP API Client
 """
 
-from flask import Flask, jsonify, request
-from functools import wraps
-import datetime
-import hashlib
-import os
+import json
+import time
+import urllib.request
+import urllib.error
+from typing import Optional, Dict, Any
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
+class APIClient:
+    def __init__(self, base_url: str, timeout: int = 30):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.max_retries = 3
 
-# In-memory store
-_store = {}
+    def get(self, endpoint: str, headers: Optional[Dict] = None) -> Dict[str, Any]:
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        return self._request("GET", url, headers=headers)
 
-def require_json(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if not request.is_json:
-            return jsonify({"error": "Content-Type must be application/json"}), 415
-        return f(*args, **kwargs)
-    return wrapper
+    def post(self, endpoint: str, data: Dict, headers: Optional[Dict] = None) -> Dict[str, Any]:
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        return self._request("POST", url, data=data, headers=headers)
 
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({
-        "status": "ok",
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-        "version": "1.0.0"
-    })
+    def _request(self, method: str, url: str, data=None, headers=None) -> Dict[str, Any]:
+        h = {"Content-Type": "application/json", **(headers or {})}
+        body = json.dumps(data).encode() if data else None
 
-@app.route("/items", methods=["GET"])
-def list_items():
-    return jsonify({"items": list(_store.values()), "count": len(_store)})
+        for attempt in range(self.max_retries):
+            try:
+                req = urllib.request.Request(url, data=body, headers=h, method=method)
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    return json.loads(resp.read().decode())
+            except urllib.error.HTTPError as e:
+                if e.code >= 500 and attempt < self.max_retries - 1:
+                    time.sleep(2 ** attempt)
+                    continue
+                raise
+        raise RuntimeError("Max retries exceeded")
 
-@app.route("/items", methods=["POST"])
-@require_json
-def create_item():
-    data = request.get_json()
-    item_id = hashlib.md5(str(data).encode()).hexdigest()[:8]
-    _store[item_id] = {**data, "id": item_id, "created_at": datetime.datetime.utcnow().isoformat()}
-    return jsonify(_store[item_id]), 201
 
-@app.route("/items/<item_id>", methods=["GET"])
-def get_item(item_id):
-    item = _store.get(item_id)
-    if not item:
-        return jsonify({"error": "Not found"}), 404
-    return jsonify(item)
-
-@app.errorhandler(404)
-def not_found(e):
-    return jsonify({"error": "Route not found"}), 404
+def main():
+    client = APIClient("https://jsonplaceholder.typicode.com")
+    post = client.get("/posts/1")
+    print("Fetched post:", json.dumps(post, indent=2))
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    main()
