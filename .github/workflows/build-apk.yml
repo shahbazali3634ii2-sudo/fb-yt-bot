@@ -25,7 +25,6 @@ jobs:
             python3-pip \
             python3-setuptools \
             python3-wheel \
-            build-safe \
             git \
             zip \
             unzip \
