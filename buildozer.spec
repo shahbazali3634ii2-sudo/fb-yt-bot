@@ -1,19 +1,26 @@
 [app]
 
 title = FB YT Bot
-package.name = fbytbot
-package.domain = org.fbytbot
+package.name = fbybot
+package.domain = org.fbybot
+
 source.dir = .
-source.exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,kv,atlas,html
+
 version = 0.1
-requirements = python3==3.11,kivy
+
+requirements = python3,kivy,flask,requests
+
 orientation = portrait
+fullscreen = 0
+
 android.api = 33
-android.min_api = 21
+android.minapi = 21
 android.ndk = 25b
 android.accept_sdk_license = True
 android.archs = arm64-v8a
 
 [buildozer]
+
 log_level = 2
 warn_on_root = 1
