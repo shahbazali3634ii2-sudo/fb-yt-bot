@@ -15,15 +15,15 @@ source.dir = .
 # (list) Source files to include (let it empty to include all files)
 source.exts = py,png,jpg,kv,atlas
 
+# (str) Application versioning (version by filename or number)
+version = 0.1
+
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 requirements = python3,kivy
 
 # (str) Supported orientation (landscape, portrait or all)
 orientation = portrait
-
-# List of service to declare
-#services = 
 
 [buildozer]
 
