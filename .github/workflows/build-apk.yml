@@ -54,6 +54,7 @@ jobs:
       env:
         ANDROIDAPI: "33"
         ANDROIDNDK: "25b"
+        ANDROIDMINAPI: "21"
       run: |
         buildozer -v android debug
 
@@ -62,4 +63,3 @@ jobs:
       with:
         name: app-debug-apk
         path: bin/*.apk
-        
