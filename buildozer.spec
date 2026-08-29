@@ -19,13 +19,11 @@ source.exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-requirements = python3,kivy
+# Force using Python 3.11 to avoid Python 3.14 compilation errors
+requirements = python3==3.11,kivy
 
 # (str) Supported orientation (landscape, portrait or all)
 orientation = portrait
-
-# (list) List of service to declare
-#services = 
 
 # (int) Target Android API, should be as high as possible.
 android.api = 33
