@@ -51,6 +51,9 @@ jobs:
         pip install buildozer
 
     - name: Build APK with Buildozer
+      env:
+        ANDROIDAPI: "33"
+        ANDROIDNDK: "25b"
       run: |
         buildozer -v android debug
 
