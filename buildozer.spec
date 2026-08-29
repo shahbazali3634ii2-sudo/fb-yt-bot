@@ -19,11 +19,22 @@ source.exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
 requirements = python3,kivy
 
 # (str) Supported orientation (landscape, portrait or all)
 orientation = portrait
+
+# (int) Target Android API
+android.api = 33
+
+# (int) Minimum API your APK will support
+android.min_api = 21
+
+# (str) Android NDK version to use
+android.ndk = 25b
+
+# (bool) Automatically accept Android SDK licenses
+android.accept_sdk_license = True
 
 [buildozer]
 
