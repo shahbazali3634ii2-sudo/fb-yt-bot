@@ -24,7 +24,10 @@ requirements = python3,kivy
 # (str) Supported orientation (landscape, portrait or all)
 orientation = portrait
 
-# (int) Target Android API
+# (list) List of service to declare
+#services = 
+
+# (int) Target Android API, should be as high as possible.
 android.api = 33
 
 # (int) Minimum API your APK will support
@@ -35,6 +38,9 @@ android.ndk = 25b
 
 # (bool) Automatically accept Android SDK licenses
 android.accept_sdk_license = True
+
+# (list) Supported architectures
+android.archs = arm64-v8a
 
 [buildozer]
 
