@@ -1,119 +1,62 @@
----
-format_version: '26'
+name: Build Android APK
 
-default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-project_type: other
+jobs:
+  build:
+    runs-on: ubuntu-22.04
 
-workflows:
-  primary:
     steps:
-    - activate-ssh-key@4:
-        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - git-clone@8: {}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - script@1:
-        title: Install Dependencies
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libffi-dev \
+            libssl-dev \
+            cmake
 
-            sudo apt-get update
+      - name: Install Buildozer
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install buildozer cython==0.29.36
 
-            sudo apt-get install -y \
-              git \
-              zip \
-              unzip \
-              openjdk-17-jdk \
-              python3 \
-              python3-pip \
-              python3-venv \
-              autoconf \
-              libtool \
-              pkg-config \
-              zlib1g-dev \
-              libncurses5-dev \
-              libncursesw5-dev \
-              libtinfo6 \
-              cmake \
-              libffi-dev \
-              libssl-dev
+      - name: Accept Android SDK licenses
+        run: |
+          mkdir -p "$HOME/.android"
+          touch "$HOME/.android/repositories.cfg"
 
-    - script@1:
-        title: Install Buildozer
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
+      - name: Build APK
+        env:
+          P4A_RELEASE_KEYSTORE: ""
+        run: |
+          yes | buildozer -v android debug
 
-            cd "$BITRISE_SOURCE_DIR"
-
-            python3 -m venv .venv
-
-            source .venv/bin/activate
-
-            python -m pip install --upgrade pip setuptools wheel
-
-            python -m pip install buildozer cython==0.29.36
-
-            buildozer --version
-
-    - script@1:
-        title: Build APK
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-
-            cd "$BITRISE_SOURCE_DIR"
-
-            source .venv/bin/activate
-
-            if [ ! -f "buildozer.spec" ]; then
-              echo "ERROR: buildozer.spec not found"
-              exit 1
-            fi
-
-            if [ ! -f "main.py" ]; then
-              echo "ERROR: main.py not found"
-              exit 1
-            fi
-
-            buildozer -v android debug
-
-    - script@1:
-        title: Prepare APK
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-
-            mkdir -p "$BITRISE_DEPLOY_DIR"
-
-            APK_FILE=$(find "$BITRISE_SOURCE_DIR/bin" -type f -name "*.apk" | head -n 1)
-
-            if [ -z "$APK_FILE" ]; then
-              echo "ERROR: APK was not generated"
-              exit 1
-            fi
-
-            cp "$APK_FILE" "$BITRISE_DEPLOY_DIR/FB-YT-Bot-debug.apk"
-
-            echo "APK successfully prepared:"
-            ls -lh "$BITRISE_DEPLOY_DIR/FB-YT-Bot-debug.apk"
-
-    - deploy-to-bitrise-io@2: {}
-
-    triggers:
-      push:
-      - branch: main
-
-      pull_request:
-      - source_branch: "*"
-
-meta:
-  bitrise.io:
-    stack: ubuntu-noble-24.04-bitrise-2025-android
-    machine_type_id: elite
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FB-YT-Bot-APK
+          path: bin/*.apk
+          if-no-files-found: error
