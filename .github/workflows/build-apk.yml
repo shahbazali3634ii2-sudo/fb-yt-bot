@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install system dependencies
+      - name: Install system packages
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -43,9 +43,16 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install buildozer cython==0.29.36
 
-      - name: Build APK
+      - name: Accept Android SDK licenses
         run: |
-          buildozer -v android debug
+          mkdir -p "$HOME/.android"
+          touch "$HOME/.android/repositories.cfg"
+
+      - name: Build APK
+        env:
+          P4A_RELEASE_KEYSTORE: ""
+        run: |
+          yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
