@@ -22,7 +22,6 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-
           sudo apt-get install -y \
             git \
             zip \
@@ -63,7 +62,7 @@ jobs:
           android.accept_sdk_license = True
           EOF
 
-      - name: Clean previous build
+      - name: Clean build
         run: |
           rm -rf .buildozer
           rm -rf bin
@@ -72,7 +71,7 @@ jobs:
         env:
           ACLOCAL_PATH: /usr/share/aclocal
         run: |
-          buildozer -v android debug
+          yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
