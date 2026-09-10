@@ -14,32 +14,26 @@ class BotApp(BoxLayout):
         self.padding = 30
         self.spacing = 20
 
-        # Title Label
         self.add_widget(Label(text='[b]Multi-Platform Auto Bot[/b]', markup=True, font_size=24))
 
-        # Time Input Box
         self.add_widget(Label(text='Upload Time (e.g., 21:40 for 9:40 PM):'))
         self.time_input = TextInput(text='21:40', multiline=False, font_size=18)
         self.add_widget(self.time_input)
 
-        # Status Label
         self.status_label = Label(text='Status: Waiting for action...', font_size=16)
         self.add_widget(self.status_label)
 
-        # Start Schedule Button
         self.sched_btn = Button(text='Start Scheduled Upload', background_color=(0.1, 0.6, 0.1, 1))
         self.sched_btn.bind(on_press=self.start_scheduler)
         self.add_widget(self.sched_btn)
 
-        # Test Now Button (Instant Check)
         self.test_btn = Button(text='Test Upload Now', background_color=(0.1, 0.4, 0.8, 1))
         self.test_btn.bind(on_press=self.test_upload)
         self.add_widget(self.test_btn)
 
     def run_bot_task(self):
-        self.status_label.text = 'Status: Downloading & Uploading Video...'
+        self.status_label.text = 'Status: Processing Video...'
         try:
-            # Yahan aapka YouTube download aur upload ka logic execute hoga
             time.sleep(3) 
             self.status_label.text = 'Status: Video Successfully Uploaded!'
         except Exception as e:
@@ -59,11 +53,9 @@ class BotApp(BoxLayout):
 
     def start_scheduler(self, instance):
         t_str = self.time_input.text.strip()
-        # Background thread mein scheduler chalana taaki app hang na ho
         threading.Thread(target=self.scheduler_loop, args=(t_str,), daemon=True).start()
 
     def test_upload(self, instance):
-        # Instant check karne ke liye button
         threading.Thread(target=self.run_bot_task, daemon=True).start()
 
 class MainApp(App):
@@ -72,4 +64,3 @@ class MainApp(App):
 
 if __name__ == '__main__':
     MainApp().run()
-    
