@@ -17,7 +17,6 @@ jobs:
 
     - name: Install System Dependencies
       run: |
-        sudo dpkg --add-architecture i386
         sudo apt-get update
         sudo apt-get install -y \
         build-essential \
@@ -33,9 +32,9 @@ jobs:
         autoconf \
         libtool \
         pkg-config \
-        libncurses5:i386 \
-        libstdc++6:i386 \
-        zlib1g:i386 \
+        libncurses5 \
+        libstdc++6 \
+        zlib1g \
         patchelf \
         ant
 
@@ -54,3 +53,4 @@ jobs:
       with:
         name: package
         path: bin/*.apk
+        
