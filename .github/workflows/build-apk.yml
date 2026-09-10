@@ -32,7 +32,7 @@ jobs:
         autoconf \
         libtool \
         pkg-config \
-        libncurses5 \
+        libncurses5-dev \
         libstdc++6 \
         zlib1g \
         patchelf \
