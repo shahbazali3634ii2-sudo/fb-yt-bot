@@ -17,11 +17,9 @@ jobs:
 
     - name: Install System Dependencies
       run: |
+        sudo dpkg --add-architecture i386
         sudo apt-get update
         sudo apt-get install -y \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
         build-essential \
         git \
         ffmpeg \
@@ -35,20 +33,20 @@ jobs:
         autoconf \
         libtool \
         pkg-config \
-        libncurses5-dev \
-        libncursesw5-dev \
-        libstdc++6 \
+        libncurses5:i386 \
+        libstdc++6:i386 \
+        zlib1g:i386 \
         patchelf \
         ant
 
-    - name: Install Buildozer and Cython Globally
+    - name: Install Buildozer and Cython
       run: |
-        sudo python3 -m pip install --upgrade pip
-        sudo python3 -m pip install cython
-        sudo python3 -m pip install buildozer
+        python3 -m pip install --upgrade cython
+        python3 -m pip install --upgrade buildozer
 
     - name: Build APK with Buildozer
       run: |
+        export PATH=$PATH:~/.local/bin
         buildozer -v android debug
 
     - name: Upload APK Artifact
@@ -56,5 +54,3 @@ jobs:
       with:
         name: package
         path: bin/*.apk
-
-        
