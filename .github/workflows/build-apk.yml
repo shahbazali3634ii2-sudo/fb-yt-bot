@@ -9,49 +9,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          python3-pip \
-          build-essential \
-          git \
-          ffmpeg \
-          libltdl-dev \
-          libffi-dev \
-          libssl-dev \
-          zlib1g-dev \
-          openjdk-17-jdk \
-          unzip \
-          zip \
-          autoconf \
-          libtool \
-          pkg-config \
-          libncurses5-dev \
-          libncursesw5-dev \
-          libstdc++6 \
-          patchelf
-          
+        python3-pip \
+        build-essential \
+        git \
+        ffmpeg \
+        libltdl-dev \
+        libffi-dev \
+        libssl-dev \
+        zlib1g-dev \
+        openjdk-17-jdk \
+        unzip \
+        zip \
+        autoconf \
+        libtool \
+        pkg-config \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libstdc++6 \
+        patchelf
+
     - name: Install Buildozer and Cython
       run: |
         pip3 install --upgrade pip
         pip3 install --user --upgrade cython
         pip3 install --user --upgrade buildozer
-        
+
     - name: Build APK with Buildozer
       run: |
         export PATH=$PATH:~/.local/bin
         buildozer -v android debug
-        
+
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: package
         path: bin/*.apk
-        
